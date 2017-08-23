@@ -1,0 +1,6 @@
+{
+  "verbose": true,
+  "watch": ["src", "index.js", "example/fs-styles/webpack.config.babel.js"],
+  "script": null,
+  "exec": "./node_modules/.bin/webpack-dev-server --config example/fs-styles/webpack.config.babel.js"
+}

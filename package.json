@@ -1,0 +1,28 @@
+{
+  "scripts": {
+    "example:simple:serve": "nodemon --config nodemon.simple.json",
+    "example:simple:build": "webpack --config example/simple/webpack.config.babel.js",
+    "example:fs-styles:serve": "nodemon --config nodemon.fs-styles.json",
+    "example:fs-styles:build": "webpack --config example/fs-styles/webpack.config.babel.js"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-metalab": "^1.0.0",
+    "clean-webpack-plugin": "^0.1.16",
+    "css-loader": "^0.28.5",
+    "extract-text-webpack-plugin": "^3.0.0",
+    "fs-styles": "git+https://github.com/fs-webdev/fs-styles.git",
+    "html-webpack-plugin": "^2.30.1",
+    "node-sass": "^4.5.3",
+    "nodemon": "^1.11.0",
+    "sass-loader": "^6.0.6",
+    "style-loader": "^0.18.2",
+    "webpack": "^3.5.5",
+    "webpack-dev-server": "^2.7.1"
+  },
+  "dependencies": {
+    "livingcss": "^4.3.1",
+    "lodash": "^4.17.4"
+  }
+}
