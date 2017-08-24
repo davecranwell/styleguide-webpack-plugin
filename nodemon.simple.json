@@ -1,6 +1,0 @@
-{
-  "verbose": true,
-  "watch": ["src", "index.js", "example/simple/webpack.config.babel.js"],
-  "script": null,
-  "exec": "./node_modules/.bin/webpack-dev-server --config example/simple/webpack.config.babel.js"
-}

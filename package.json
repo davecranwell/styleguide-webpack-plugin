@@ -1,9 +1,7 @@
 {
   "scripts": {
-    "example:simple:serve": "nodemon --config nodemon.simple.json",
-    "example:simple:build": "webpack --config example/simple/webpack.config.babel.js",
-    "example:fs-styles:serve": "nodemon --config nodemon.fs-styles.json",
-    "example:fs-styles:build": "webpack --config example/fs-styles/webpack.config.babel.js"
+    "example:serve": "nodemon",
+    "example:build": "webpack --config example/webpack.config.babel.js"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

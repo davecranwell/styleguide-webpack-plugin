@@ -1,5 +1,5 @@
 import path from 'path';
-import LivingCSSWebpackPlugin from '../../src';
+import StyleGuide from '../src';
 import HTMLWebpackPlugin from 'html-webpack-plugin';
 import ExtractTextWebpackPlugin from 'extract-text-webpack-plugin';
 import CleanWebpackPlugin from 'clean-webpack-plugin';
@@ -58,17 +58,19 @@ export default {
             }
         ),
 
-        new LivingCSSWebpackPlugin(
+        new StyleGuide(
             {
-                source: path.join(__dirname, 'app', '**', '*.scss'), // Files to parse
-                dest: 'styleguide', // destination of styleguide
-                chunks: ['frontend'], // what chunks should be included (js and css files)
-                tags: {},
-                preprocess: function (context, template, handlebars) {
-                    context.title = "LivingCSS Style Guide";
-                    context.footerHTML = "Style Guide generated with <a href=\"https://github.com/straker/livingcss\">LivingCSS</a>.";
-                    context.globalStylesheets = []; // stylesheets for page
-                    context.stylesheets = []; // stylesheets for polymer previews
+                livingCSS: {
+                    source: path.join(__dirname, 'app', '**', '*.scss'), // Files to parse
+                    dest: 'styleguide', // destination of styleguide
+                    chunks: ['frontend'], // what chunks should be included (js and css files)
+                    tags: {},
+                    preprocess: function (context, template, handlebars) {
+                        context.title = "LivingCSS Style Guide";
+                        context.footerHTML = "Style Guide generated with <a href=\"https://github.com/straker/livingcss\">LivingCSS</a>.";
+                        context.globalStylesheets = []; // stylesheets for page
+                        context.stylesheets = []; // stylesheets for polymer previews
+                    }
                 }
             }
         )
