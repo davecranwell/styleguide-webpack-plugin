@@ -51,9 +51,14 @@ export default {
         new LivingCSSWebpackPlugin(
             {
                 source: [path.join(process.cwd(), 'node_modules', 'fs-styles', 'assets', 'css', '**', '*.styl')],
-                dest: 'styleguide',
-                chunks: ['frontend'],
-                preprocess: function(context, template, handlebars){
+                dest: 'styleguide', // destination of styleguide
+                chunks: ['frontend'], // what chunks should be included (js and css files)
+                tags: {},
+                preprocess: function (context, template, handlebars) {
+                    context.title = "LivingCSS Style Guide";
+                    context.footerHTML = "Style Guide generated with <a href=\"https://github.com/straker/livingcss\">LivingCSS</a>.";
+                    context.globalStylesheets = []; // stylesheets for page
+                    context.stylesheets = []; // stylesheets for polymer previews
                 }
             }
         )

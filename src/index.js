@@ -1,5 +1,6 @@
 import path from 'path';
-import {forEach, merge, extend} from 'lodash';
+import {forEach, merge, concat} from 'lodash';
+import _ from 'lodash';
 import fs from 'fs';
 
 import utils from 'livingcss/lib/utils';
@@ -12,6 +13,8 @@ const defaults = {
     template: path.join(path.dirname(require.resolve('livingcss')), 'template/template.hbs'),
     partials: path.join(path.dirname(require.resolve('livingcss')), 'template/partials/*.hbs'),
     dest: 'styleguide',
+    tags: tags,
+    sortOrder: [],
     context: {
         footerHTML: '',
         globalStylesheets: [],
@@ -24,38 +27,63 @@ const defaults = {
         title: ''
     },
     source: []
-}
+};
+
+const context = {
+    footerHTML: '',
+    globalStylesheets: [],
+    menuButtonHTML: 'Menu',
+    pageOrder: [],
+    pages: [],
+    scripts: [],
+    sections: [],
+    stylesheets: [],
+    title: ''
+};
 
 function StyleGuidePlugin(options) {
-    this.options = extend(defaults, options);
-    this.options.source = (typeof this.options.source === 'string' ? [this.options.source] : this.options.source);
+    options.source = concat([], options.source);
+    options.sortOrder = concat([], options.sortOrder);
+
+    this.options = merge(defaults, options);
+    this.context = merge({}, context);
 }
 
 StyleGuidePlugin.prototype.apply = function (compiler) {
-    compiler.plugin('emit', (compilation, callback) => {
-        this.build(compilation).then(pages => {
-            callback()
+    let compilationPromise;
+
+    compiler.plugin('before-compile', (compilation, callback) => {
+        compilationPromise = this.build(compilation).then(pages => {
+            callback();
+            return pages
         })
+    });
+
+    compiler.plugin('emit', (compilation, callback) => {
+        compilationPromise.then(pages => {
+            return this.registerPages(compilation, pages);
+        }).then(() => {
+                callback();
+            }
+        )
     });
 };
 
 StyleGuidePlugin.prototype.build = function (compilation) {
-    const context = merge({}, this.options.context);
+    const context = merge({}, this.context);
 
     return Promise.all(
         [
-            this.readTemplate(),
-            this.readPartials(),
+            this.loadTemplate(),
+            this.loadPartials(),
             this.parseComments(context)
         ]
     ).then(values => {
         return this.buildPages(context, values[0]);
-    }).then(pages => {
-        return this.registerPages(compilation, pages);
     });
 }
 
-StyleGuidePlugin.prototype.readTemplate = function () {
+StyleGuidePlugin.prototype.loadTemplate = function () {
     return new Promise((resolve, reject) => {
         fs.readFile(this.options.template, 'utf8', (err, data) => {
             if (err) {
@@ -67,7 +95,7 @@ StyleGuidePlugin.prototype.readTemplate = function () {
     });
 };
 
-StyleGuidePlugin.prototype.readPartials = function () {
+StyleGuidePlugin.prototype.loadPartials = function () {
     return utils.readFileGlobs(this.options.partials, (data, file) => {
         Handlebars.registerPartial(path.basename(file, path.extname(file)), data)
     });
@@ -75,18 +103,18 @@ StyleGuidePlugin.prototype.readPartials = function () {
 
 StyleGuidePlugin.prototype.parseComments = function (context) {
     return utils.readFileGlobs(this.options.source, (data, file) => {
-        parseComments(data, file, tags, context);
+        parseComments(data, file, this.options.tags, context);
     });
 };
 
 StyleGuidePlugin.prototype.buildPages = function (context, template) {
     // throw error if an @sectionof referenced a section that was never defined
-    forEach(tags.forwardReferenceSections, (section) => {
-        if (!tags.forwardReferenceSections.hasOwnProperty(section)) {
+    forEach(this.options.tags.forwardReferenceSections, (section) => {
+        if (!this.options.tags.forwardReferenceSections.hasOwnProperty(section)) {
             return;
         }
 
-        throw tags.forwardReferenceSections[section][0].error;
+        throw this.options.tags.forwardReferenceSections[section][0].error;
     })
 
     utils.generateSortOrder(context, this.options.sortOrder);
@@ -130,43 +158,52 @@ StyleGuidePlugin.prototype.buildPages = function (context, template) {
     return pages;
 };
 
-StyleGuidePlugin.prototype.getAssets = function (compilation) {
+StyleGuidePlugin.prototype.loadAssets = function (compilation) {
     const assets = {
         styles: [],
         scripts: []
     };
 
-    forEach(this.options.chunks, (key) => {
-        forEach(compilation.getStats().toJson().assetsByChunkName[key], (file) => {
-            const ext = path.extname(file);
+    return new Promise((resolve, reject) => {
+        forEach(this.options.chunks, (key) => {
+            forEach(compilation.getStats().toJson().assetsByChunkName[key], (file) => {
+                const ext = path.extname(file);
 
-            if(ext === '.css'){
-                assets.styles.push(compilation.assets[file].source())
-            } else if (ext === '.js') {
-                assets.scripts.push(path.join('/', file));
-            }
-        })
+                if (ext === '.css') {
+                    assets.styles.push(compilation.assets[file].source())
+                } else if (ext === '.js') {
+                    assets.scripts.push(path.join('/', file));
+                }
+            })
+        });
+
+        resolve(assets);
+    }).then(() => {
+        return utils.readFiles(this.context.stylesheets, function (data) {
+            assets.styles.push(data);
+        });
+    }).then(() => {
+        return assets;
     });
-
-    return assets;
 };
 
 StyleGuidePlugin.prototype.registerPages = function (compilation, pages) {
     const promises = [];
-    const assets = this.getAssets(compilation);
 
-    forEach(pages, (page, index) => {
-        promises.push(this.registerPage(compilation, page, assets))
+    return this.loadAssets(compilation).then(assets => {
+        forEach(pages, (page, index) => {
+            promises.push(this.registerPage(compilation, page, assets))
+        });
+    }).then(() => {
+        return Promise.all(promises);
     });
-
-    return Promise.all(promises);
 };
 
 StyleGuidePlugin.prototype.registerPage = function (compilation, page, assets) {
     return new Promise((resolve, reject) => {
         // find all root sections (sections with no parent) by removing all number
         // indices but keeping the named indices
-        for (let i = 0; i < page.context.sections.length; ) {
+        for (let i = 0; i < page.context.sections.length;) {
             if (page.context.sections[i].parent) {
                 page.context.sections.splice(i, 1);
             }
@@ -188,11 +225,11 @@ StyleGuidePlugin.prototype.registerPage = function (compilation, page, assets) {
         page.context.parsedStylesheets = merge(page.context.parsedStylesheets, assets.styles);
         page.context.scripts = merge(page.context.scripts, assets.scripts);
 
-        const html = Handlebars.compile(page.template)(page.context);
-
-        if(this.options.preprocess){
+        if (this.options.preprocess) {
             this.options.preprocess(page.context, page.template, Handlebars)
         }
+
+        const html = Handlebars.compile(page.template)(page.context);
 
         compilation.assets[page.url] = {
             source: function () {
