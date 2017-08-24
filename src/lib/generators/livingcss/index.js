@@ -11,7 +11,6 @@ import Handlebars from 'handlebars';
 const defaults = {
     template: path.join(path.dirname(require.resolve('livingcss')), 'template/template.hbs'),
     partials: path.join(path.dirname(require.resolve('livingcss')), 'template/partials/*.hbs'),
-    dest: 'styleguide',
     tags: tags,
     sortOrder: [],
     source: []
@@ -29,15 +28,17 @@ const context = {
     title: ''
 };
 
-function livingCSSGenerator(options) {
-    options.source = _.concat([], options.source);
+function LivingCSSGenerator(source, dest, options) {
+
     options.sortOrder = _.concat([], options.sortOrder);
 
+    this.source = _.concat([], source);
+    this.dest = dest;
     this.options = _.merge(defaults, options);
     this.context = _.merge({}, context);
 }
 
-livingCSSGenerator.prototype.build = function () {
+LivingCSSGenerator.prototype.build = function () {
     const context = _.merge({}, this.context);
 
     return Promise.all(
@@ -51,7 +52,7 @@ livingCSSGenerator.prototype.build = function () {
     });
 };
 
-livingCSSGenerator.prototype.render = function (pages, givenAssets) {
+LivingCSSGenerator.prototype.render = function (pages, givenAssets) {
     return this._buildAssets(givenAssets).then(assets => {
         return Promise.all(
             _.map(
@@ -70,7 +71,7 @@ livingCSSGenerator.prototype.render = function (pages, givenAssets) {
 /*private*/
 /*******************************************************************/
 
-livingCSSGenerator.prototype._buildPages = function (context, template) {
+LivingCSSGenerator.prototype._buildPages = function (context, template) {
     // throw error if an @sectionof referenced a section that was never defined
     _.forEach(this.options.tags.forwardReferenceSections, (section) => {
         if (!this.options.tags.forwardReferenceSections.hasOwnProperty(section)) {
@@ -111,7 +112,7 @@ livingCSSGenerator.prototype._buildPages = function (context, template) {
         // values[0] = handlebars template
         pages.push(
             {
-                url: path.join(this.options.dest, `${page.id}.html`),
+                url: path.join(this.dest, `${page.id}.html`),
                 template: template,
                 context: pageContext
             }
@@ -121,7 +122,7 @@ livingCSSGenerator.prototype._buildPages = function (context, template) {
     return pages;
 };
 
-livingCSSGenerator.prototype._renderPage = function (page, assets) {
+LivingCSSGenerator.prototype._renderPage = function (page, assets) {
     return new Promise((resolve, reject) => {
         // find all root sections (sections with no parent) by removing all number
         // indices but keeping the named indices
@@ -160,7 +161,7 @@ livingCSSGenerator.prototype._renderPage = function (page, assets) {
     });
 };
 
-livingCSSGenerator.prototype._buildAssets = function (givenAssets) {
+LivingCSSGenerator.prototype._buildAssets = function (givenAssets) {
     const assets = _.merge({
         styles: [],
         scripts: []
@@ -173,7 +174,7 @@ livingCSSGenerator.prototype._buildAssets = function (givenAssets) {
     });
 };
 
-livingCSSGenerator.prototype._loadTemplate = function () {
+LivingCSSGenerator.prototype._loadTemplate = function () {
     return new Promise((resolve, reject) => {
         fs.readFile(this.options.template, 'utf8', (err, data) => {
             if (err) {
@@ -185,16 +186,16 @@ livingCSSGenerator.prototype._loadTemplate = function () {
     });
 };
 
-livingCSSGenerator.prototype._loadPartials = function () {
+LivingCSSGenerator.prototype._loadPartials = function () {
     return utils.readFileGlobs(this.options.partials, (data, file) => {
         Handlebars.registerPartial(path.basename(file, path.extname(file)), data)
     });
 };
 
-livingCSSGenerator.prototype._parseComments = function (context) {
-    return utils.readFileGlobs(this.options.source, (data, file) => {
+LivingCSSGenerator.prototype._parseComments = function (context) {
+    return utils.readFileGlobs(this.source, (data, file) => {
         parseComments(data, file, this.options.tags, context);
     });
 };
 
-module.exports = livingCSSGenerator;
+module.exports = LivingCSSGenerator;

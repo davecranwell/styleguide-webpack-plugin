@@ -3,16 +3,33 @@ import path from 'path';
 import * as generators from './generators';
 
 function Generator(generatorName, generatorOptions) {
-    const generator = generators[`_${generatorName}Generator`];
+    const generator = generatorOptions.generator || generators[`_${generatorName}Generator`];
+    const source = generatorOptions.source;
+    const dest = generatorOptions.dest || "";
+
+    let err = false;
 
     if(!generator){
         console.warn(`${generatorName} generator not found`);
+        err = true;
+    }
+
+    if(!source){
+        console.warn(`no source set for ${generatorName} generator`);
+        err = true;
+    }
+
+    if(err) {
         this.generate = function (compiler) {}
         return
     }
 
+    _.unset(generatorOptions, 'source')
+    _.unset(generatorOptions, 'dest')
+
+
     this.options = generatorOptions;
-    this.generator = new generator(this.options);
+    this.generator = new generator(source, dest, this.options.options);
 }
 
 Generator.prototype.generate = function (compiler) {
