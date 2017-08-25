@@ -61,20 +61,18 @@ export default {
 
         new StyleGuide(
             {
-                livingCSS: {
-                    source: path.join(__dirname, 'app', '**', '*.scss'), // Files to parse
-                    dest: 'styleguide', // destination of styleguide
-                    chunks: ['frontend'], // what chunks should be included (js and css files),
-                    generator: LivingCSSGenerator, // if no generator is set it falls back to object key
-                    options: {
-                        tags: {}, // add custom tags
-                        sortOrder: ['Buttons', 'Typography'], // page menu order
-                        preprocess: function (context, template, handlebars) {
-                            context.title = "LivingCSS Style Guide";
-                            context.footerHTML = "Style Guide generated with <a href=\"https://github.com/straker/livingcss\">LivingCSS</a>.";
-                            context.globalStylesheets = []; // stylesheets for page
-                            context.stylesheets = []; // stylesheets for polymer previews
-                        }
+                source: path.join(__dirname, 'app', '**', '*.scss'), // Files to parse
+                dest: 'styleguide', // destination of styleguide
+                chunks: ['frontend'], // what chunks should be included (js and css files),
+                generator: 'livingCSS', // if no generator is set it falls back to object key
+                options: {
+                    tags: {}, // add custom tags
+                    sortOrder: ['Buttons', 'Typography'], // page menu order
+                    preprocess: function (context, template, handlebars) {
+                        context.title = "LivingCSS Style Guide";
+                        context.footerHTML = "Style Guide generated with <a href=\"https://github.com/straker/livingcss\">LivingCSS</a>.";
+                        context.globalStylesheets = []; // stylesheets for page
+                        context.stylesheets = []; // stylesheets for polymer previews
                     }
                 }
             }

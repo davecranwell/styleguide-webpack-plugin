@@ -1,3 +1,3 @@
-import livingCSSGenerator from './livingcss'
+import LivingCSSGenerator from './livingcss'
 
-export const _livingCSSGenerator = livingCSSGenerator;
+export const livingCSS = LivingCSSGenerator;
