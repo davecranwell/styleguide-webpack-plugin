@@ -9,8 +9,8 @@ import tags from 'livingcss/lib/tags';
 import Handlebars from 'handlebars';
 
 const defaults = {
-    template: path.join(path.dirname(require.resolve('livingcss')), 'template/template.hbs'),
-    partials: path.join(path.dirname(require.resolve('livingcss')), 'template/partials/*.hbs'),
+    template: path.join(__dirname, 'template/template.hbs'),
+    partials: path.join(__dirname, 'template/partials/*.hbs'),
     tags: tags,
     sortOrder: [],
     source: []

@@ -1,6 +1,7 @@
 {
   "verbose": true,
   "watch": ["src", "index.js", "example/webpack.config.babel.js"],
+  "ext": "js hbs",
   "script": null,
   "exec": "./node_modules/.bin/webpack-dev-server --config example/webpack.config.babel.js"
 }
