@@ -1,5 +1,6 @@
 {
   "name": "styleguide-webpack-plugin",
+  "version": "1.0.0",
   "scripts": {
     "example:serve": "nodemon",
     "example:build": "webpack --config example/webpack.config.babel.js"
