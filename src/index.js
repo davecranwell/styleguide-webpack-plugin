@@ -1,6 +1,6 @@
-import _ from 'lodash';
-import path from 'path';
-import * as generators from './lib/generators';
+const _ = require('lodash');
+const path = require('path');
+const generators = require('./lib/generators');
 
 function StyleGuidePlugin(options) {
     const source = options.source;

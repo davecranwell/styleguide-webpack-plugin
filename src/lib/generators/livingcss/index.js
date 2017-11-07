@@ -1,12 +1,12 @@
-import path from 'path';
-import _ from 'lodash';
-import fs from 'fs';
+const path = require('path');
+const _ = require('lodash');
+const fs = require('fs');
 
-import utils from 'livingcss/lib/utils';
-import parseComments from 'livingcss/lib/parseComments';
-import tags from 'livingcss/lib/tags';
+const utils = require('livingcss/lib/utils');
+const parseComments = require('livingcss/lib/parseComments');
+const tags = require('livingcss/lib/tags');
 
-import Handlebars from 'handlebars';
+const Handlebars = require('handlebars');
 
 const defaults = {
     template: path.join(__dirname, 'template/template.hbs'),
