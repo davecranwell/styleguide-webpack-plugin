@@ -1,3 +1,5 @@
 const LivingCSSGenerator = require('./livingcss')
 
-module.exports = LivingCSSGenerator;
+module.exports = {
+	livingCSS: LivingCSSGenerator
+};
