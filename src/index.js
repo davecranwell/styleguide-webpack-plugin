@@ -84,7 +84,7 @@ StyleGuidePlugin.prototype._buildAssets = function (compilation) {
     };
 
     _.forEach(this.options.chunks, (key) => {
-        _.forEach(compilation.getStats().toJson().assetsByChunkName[key], (file) => {
+        const pushAsset = function(file) {
             const ext = path.extname(file);
 
             if (ext === '.css') {
@@ -92,7 +92,19 @@ StyleGuidePlugin.prototype._buildAssets = function (compilation) {
             } else if (ext === '.js') {
                 assets.scripts.push(path.join('/', file));
             }
-        })
+        }   
+
+        _.forEach(this.options.chunks, (key) => {
+            const asset = compilation.getStats().toJson().assetsByChunkName[key];
+
+            if(typeof asset === 'string') {
+                pushAsset(asset)
+            } else {
+                _.forEach(asset, (file) => {
+                    pushAsset(file)
+                })
+            }
+        });
     });
 
     return assets;
